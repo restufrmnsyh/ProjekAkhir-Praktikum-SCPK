@@ -64,7 +64,7 @@ def halaman_home():
 #  INPUT DATA
 # =====================================================================
 def halaman_input():
-    st.markdown('<p class="page-title">Input Data ✈</p>', unsafe_allow_html=True)
+    st.markdown('<p class="page-title">Input Data 📝</p>', unsafe_allow_html=True)
 
     tab1, tab2, tab3, tab4 = st.tabs(
         ["Alternatif", "Kriteria dan Bobot", "Tabel Terpilih", "Tabel Semua Alternatif"]
@@ -133,7 +133,7 @@ def halaman_input():
 #  OUTPUT DATA
 # =====================================================================
 def halaman_output():
-    st.markdown('<p class="page-title">Output Data ✈</p>', unsafe_allow_html=True)
+    st.markdown('<p class="page-title">Output Data 🗄️</p>', unsafe_allow_html=True)
 
     tab1, tab2, tab3 = st.tabs(["Normalisasi", "Keputusan", "Grafik"])
 
@@ -227,3 +227,4 @@ def halaman_output():
         ax.legend(fontsize=7, loc="upper right")
         ax.spines[["top","right"]].set_visible(False)
         tampil_grafik(fig)
+
