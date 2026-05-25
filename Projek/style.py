@@ -19,14 +19,15 @@ def load_css():
 
         /* Konten utama */
         .main { background-color: #16213e; }
-        .block-container { padding-top: 2rem; }
+        .block-container { padding-top: 3.5rem; padding-left: 2rem; padding-right: 2rem; }
 
         /* Judul halaman */
         .page-title {
             font-size: 1.6rem;
             font-weight: 700;
             color: #e94560;
-            margin-bottom: 0.2rem;
+            margin-top: 0.5rem;
+            margin-bottom: 1rem;
         }
 
         /* Tab aktif */
@@ -57,9 +58,11 @@ def load_css():
 
 def sidebar_nav():
     st.sidebar.markdown("## Projek Akhir SCPK")
+    st.sidebar.markdown("---")
     st.sidebar.markdown("**Profile 👤**")
     st.sidebar.write("Muhammad Restu F (123240050)")
     st.sidebar.markdown("Kafka Akmal Dani (123240203)")
+    st.sidebar.markdown("---")
     st.sidebar.markdown("Pilih salah satu")
     menu = st.sidebar.selectbox(
         "Menu",
