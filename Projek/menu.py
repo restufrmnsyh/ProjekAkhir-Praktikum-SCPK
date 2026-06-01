@@ -34,9 +34,35 @@ def halaman_home():
     st.divider()
     c1, c2, c3 = st.columns(3)
 
-    c1.image("https://img.icons8.com/?size=100&id=4lG6YyEmYmrU&format=png&color=000000", width=100)
-    c2.image("https://img.icons8.com/?size=100&id=fuHwl8nIfR3a&format=png&color=000000", width=100)
-    c3.image("https://img.icons8.com/?size=100&id=zMToY0P6F63q&format=png&color=000000", width=100)
+    with c1:
+        st.markdown(
+            """
+            <div style="text-align:center;">
+                <img src="https://img.icons8.com/?size=100&id=4lG6YyEmYmrU&format=png&color=000000" width="100">
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
+
+    with c2:
+        st.markdown(
+            """
+            <div style="text-align:center;">
+                <img src="https://img.icons8.com/?size=100&id=fuHwl8nIfR3a&format=png&color=000000" width="100">
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
+
+    with c3:
+        st.markdown(
+            """
+            <div style="text-align:center;">
+                <img src="https://img.icons8.com/?size=100&id=zMToY0P6F63q&format=png&color=000000" width="100">
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
     st.markdown(" <div style='text-align:center; fontsize:10px'> ✦ Tentang Kami ✦ ", unsafe_allow_html=True)
     st.markdown("""
     <div style='text-align:center; color:#ccc;'>
@@ -64,10 +90,16 @@ def halaman_home():
 #  INPUT DATA
 # =====================================================================
 def halaman_input():
-    st.markdown('<p class="page-title">Input Data ✈</p>', unsafe_allow_html=True)
+    st.markdown(
+    """
+    <div style='padding-top:20px;'></div>
+    """,
+    unsafe_allow_html=True
+    )
 
+    st.title("⌨️ Input Data")
     tab1, tab2, tab3, tab4 = st.tabs(
-        ["Alternatif", "Kriteria dan Bobot", "Tabel Terpilih", "Tabel Semua Alternatif"]
+        ["🎯Alternatif", "⚖️Kriteria dan Bobot", "📑Tabel Terpilih", "🗂️Tabel Semua Alternatif"]
     )
 
     # ── Tab 1: pilih alternatif ───────────────────────────────
@@ -78,14 +110,49 @@ def halaman_input():
         df_alt = get_alternatif()
         semua_karier = df_alt["Career_Goals"].tolist()
 
-        jumlah = st.number_input("Pilih berapa banyak alternatif", min_value=3, max_value=len(semua_karier), value=5)
-        terpilih = st.multiselect(
+        # Inisialisasi sekali saja
+        if "jumlah_widget" not in st.session_state:
+            st.session_state["jumlah_widget"] = 5
+        if "alternatif_terpilih" not in st.session_state:
+            st.session_state["alternatif_terpilih"] = []
+
+        # Callback slider: trim KEDUA key saat max dikecilkan
+        def on_jumlah_change():
+            j = st.session_state["jumlah_widget"]
+            if len(st.session_state.get("alternatif_widget", [])) > j:
+                st.session_state["alternatif_widget"] = st.session_state["alternatif_widget"][:j]
+            if len(st.session_state.get("alternatif_terpilih", [])) > j:
+                st.session_state["alternatif_terpilih"] = st.session_state["alternatif_terpilih"][:j]
+
+        # Callback multiselect: simpan ke key permanen & reset flag keputusan
+        def on_alternatif_change():
+            st.session_state["alternatif_terpilih"] = st.session_state["alternatif_widget"]
+            st.session_state["show_keputusan"] = False
+
+        jumlah = st.slider(
+            "Pilih berapa banyak alternatif",
+            min_value=3,
+            max_value=10,
+            key="jumlah_widget",
+            on_change=on_jumlah_change,
+        )
+
+        # Pastikan default tidak melebihi max_selections sebelum render widget
+        safe_default = st.session_state["alternatif_terpilih"][:jumlah]
+        if st.session_state.get("alternatif_widget", safe_default) != safe_default:
+            if len(st.session_state.get("alternatif_widget", [])) > jumlah:
+                st.session_state["alternatif_widget"] = st.session_state["alternatif_widget"][:jumlah]
+
+        st.multiselect(
             f"Pilih maksimal {jumlah} karier:",
             options=semua_karier,
-            default=semua_karier[:int(jumlah)],
-            max_selections=int(jumlah),
+            default=safe_default,
+            max_selections=jumlah,
+            key="alternatif_widget",
+            on_change=on_alternatif_change,
         )
-        st.session_state["alternatif_terpilih"] = terpilih
+
+        terpilih = st.session_state["alternatif_terpilih"]
 
         st.markdown(f"**Alternatif yang dipilih ({len(terpilih)}):**")
         for i, k in enumerate(terpilih, 1):
@@ -94,28 +161,46 @@ def halaman_input():
     # ── Tab 2: kriteria & bobot ───────────────────────────────
     with tab2:
         st.markdown("**Masukkan Data Kriteria dan Bobot**")
-        st.caption("Minimum 5 kriteria (semua sudah tersedia dari dataset)")
 
         nama_kriteria = ["GPA (IPK)", "Python Skill", "Problem Solving", "Communication", "Internship", "Certifications"]
+
+        # Inisialisasi key widget sekali saja dari nilai yang tersimpan,
+        # sehingga bobot tidak reset saat user kembali ke halaman ini
+        saved_bobot = st.session_state.get("bobot", [1.0] * 6)
+        for i in range(1, 7):
+            wk = f"bobot_widget_{i}"
+            if wk not in st.session_state:
+                st.session_state[wk] = float(saved_bobot[i - 1])
+
         bobot_list = []
         for i, nama in enumerate(nama_kriteria, 1):
             c1, c2 = st.columns([2, 1])
-            c1.text_input(f"Kriteria {i}", value=nama, disabled=True, label_visibility="collapsed")
-            b = c2.number_input(f"Bobot {i}", min_value=0.0, max_value=10.0, value=1.0, step=0.1,
-                                label_visibility="visible")
+            c1.text_input(f"Kriteria {i}", value=nama, disabled=True, label_visibility="visible")
+            b = c2.number_input(
+                f"Bobot {i}",
+                min_value=0.0,
+                max_value=10.0,
+                step=0.1,
+                key=f"bobot_widget_{i}",
+                label_visibility="visible"
+            )
             bobot_list.append(b)
 
         st.session_state["bobot"] = bobot_list
 
+        if sum(bobot_list) == 0:
+            st.error("⚠️ Semua bobot bernilai 0. Minimal satu kriteria harus memiliki bobot lebih dari 0.")
+
     # ── Tab 3: tabel alternatif terpilih ─────────────────────
     with tab3:
         st.markdown("**Tabel Alternatif Terpilih**")
-        terpilih = st.session_state.get("alternatif_terpilih", [])
-        if not terpilih:
+        # FIX 4: Selalu baca dari session state, bukan variabel lokal Tab 1
+        terpilih_tab3 = st.session_state.get("alternatif_terpilih", [])
+        if not terpilih_tab3:
             st.warning("Belum ada alternatif yang dipilih di tab Alternatif.")
         else:
             df_alt = get_alternatif()
-            df_show = df_alt[df_alt["Career_Goals"].isin(terpilih)].reset_index(drop=True)
+            df_show = df_alt[df_alt["Career_Goals"].isin(terpilih_tab3)].reset_index(drop=True)
             df_show.columns = ["Karier","GPA","Python","Problem Solving","Communication","Internship","Certifications"]
             st.dataframe(df_show.round(3), use_container_width=True)
 
@@ -127,15 +212,21 @@ def halaman_input():
                  "Internship_Experience","Certifications_Training","Career_Goals"]
         st.dataframe(df[kolom].reset_index(drop=True), use_container_width=True, height=400)
         st.caption(f"Total: {len(df):,} baris data")
+    # FIX 5: Hapus blok DEBUG
 
 
 # =====================================================================
 #  OUTPUT DATA
 # =====================================================================
 def halaman_output():
-    st.markdown('<p class="page-title">Output Data ✈</p>', unsafe_allow_html=True)
-
-    tab1, tab2, tab3 = st.tabs(["Normalisasi", "Keputusan", "Grafik"])
+    st.markdown(
+    """
+    <div style='padding-top:20px;'></div>
+    """,
+    unsafe_allow_html=True
+    )
+    st.title("📋Output Data")
+    tab1, tab2, tab3 = st.tabs(["📲 Normalisasi", "📌 Keputusan", "📊 Grafik"])
 
     # Ambil data dari session state
     terpilih = st.session_state.get("alternatif_terpilih", [])
@@ -143,75 +234,131 @@ def halaman_output():
 
     df_alt = get_alternatif()
 
-    if terpilih:
-        df_filtered = df_alt[df_alt["Career_Goals"].isin(terpilih)].reset_index(drop=True)
-    else:
-        df_filtered = df_alt.copy()
+    if len(terpilih) < 3:
+        st.warning("Silakan pilih minimal 3 alternatif terlebih dahulu.")
+        return
+
+    df_filtered = df_alt[
+        df_alt["Career_Goals"].isin(terpilih)
+    ].reset_index(drop=True)
 
     cukup = len(df_filtered) >= 3
 
+    # Hitung SAW sekali saja, pakai ulang di semua tab
+    df_norm, df_rank, w_norm = (None, None, None)
+    if cukup:
+        df_norm, df_rank, w_norm = hitung_saw(df_filtered, bobot)
+    bobot_nol = cukup and df_norm is None  # semua bobot 0
+
     # ── Tab 1: Normalisasi ────────────────────────────────────
     with tab1:
-        with st.expander("✦ Normalisasi", expanded=True):
+        with st.expander("Normalisasi", expanded=True):
             st.markdown("**Normalisasi Matriks Keputusan**")
             if not cukup:
                 st.error("Belum input alternatif dan kriteria atau kurang dari minimum")
+            elif bobot_nol:
+                st.error("⚠️ Semua bobot bernilai 0. Kembali ke Input Data dan isi minimal satu bobot.")
             else:
-                df_norm, df_rank, w_norm = hitung_saw(df_filtered, bobot)
-                norm_cols = [c + "_norm" for c in KRITERIA]
-                df_norm.columns = ["Karier","GPA","Python","Problem Solving",
-                                   "Communication","Internship","Certifications"]
-                st.dataframe(df_norm.round(4), use_container_width=True)
-                st.session_state["df_rank"] = df_rank
-                st.session_state["df_norm_ready"] = True
+                df_norm_display = df_norm.copy()
+                df_norm_display.columns = ["Karier","GPA","Python","Problem Solving",
+                                           "Communication","Internship","Certifications"]
+                st.dataframe(df_norm_display.round(4), use_container_width=True)
 
     # ── Tab 2: Keputusan ──────────────────────────────────────
     with tab2:
-        if st.button("Keputusan"):
-            if not cukup:
-                st.error("Belum input alternatif dan kriteria atau kurang dari minimum")
-            else:
-                df_norm, df_rank, _ = hitung_saw(df_filtered, bobot)
-                st.session_state["df_rank"] = df_rank
-
-        if "df_rank" in st.session_state:
-            df_rank = st.session_state["df_rank"]
-            st.success(f"Keputusannya adalah: **{df_rank.iloc[0]['Career_Goals']}** "
-                       f"(Skor: {df_rank.iloc[0]['Skor_SAW']:.6f})")
-            st.markdown("**Tabel Perangkingan (diurutkan tertinggi ke terendah)**")
-            df_show = df_rank.copy()
-            df_show.columns = ["Karier","Skor SAW"]
-            st.dataframe(df_show.style.background_gradient(cmap="Blues", subset=["Skor SAW"]),
-                         use_container_width=True)
+        if not cukup:
+            st.error("Belum input alternatif dan kriteria atau kurang dari minimum")
+        elif bobot_nol:
+            st.error("⚠️ Semua bobot bernilai 0. Kembali ke Input Data dan isi minimal satu bobot.")
         else:
-            st.info("Keputusannya adalah: 0")
+            st.markdown("**Tabel Perangkingan (diurutkan tertinggi ke terendah)**")
+
+            df_show = df_rank.copy()
+            df_show.columns = ["Karier", "Skor SAW"]
+
+            st.dataframe(
+                df_show.style.background_gradient(
+                    cmap="Blues",
+                    subset=["Skor SAW"]
+                ),
+                use_container_width=True
+            )
+
+            if "show_keputusan" not in st.session_state:
+                st.session_state["show_keputusan"] = False
+
+            if st.button("Keputusan"):
+                st.session_state["show_keputusan"] = True
+
+            if st.session_state["show_keputusan"]:
+                st.success(
+                    f"Keputusannya adalah: **{df_rank.iloc[0]['Career_Goals']}** "
+                    f"(Skor: {df_rank.iloc[0]['Skor_SAW']:.6f})"
+                )
 
     # ── Tab 3: Grafik ─────────────────────────────────────────
     with tab3:
         if not cukup:
             st.info("Pilih alternatif terlebih dahulu di menu Input Data.")
             return
+        if bobot_nol:
+            st.error("⚠️ Semua bobot bernilai 0. Kembali ke Input Data dan isi minimal satu bobot.")
+            return
 
-        df_norm, df_rank, _ = hitung_saw(df_filtered, bobot)
         df_raw = load_data()
 
-        # Grafik 1 — Skor SAW
+        # Grafik 1 — Skor SAW (Pie)
         st.markdown("**Skor SAW per Karier**")
-        fig, ax = plt.subplots(figsize=(9, max(3, len(df_rank) * 0.35)))
-        colors = plt.cm.Blues(np.linspace(0.4, 0.85, len(df_rank)))
-        ax.barh(df_rank["Career_Goals"][::-1], df_rank["Skor_SAW"][::-1], color=colors)
-        ax.set_xlabel("Skor SAW")
-        ax.spines[["top","right"]].set_visible(False)
+        fig, ax = plt.subplots(figsize=(8, max(5, len(df_rank) * 0.5)))
+        colors = plt.cm.Blues(np.linspace(0.4, 0.9, len(df_rank)))
+        wedges, texts, autotexts = ax.pie(
+            df_rank["Skor_SAW"],
+            labels=df_rank["Career_Goals"],
+            autopct="%1.1f%%",
+            colors=colors,
+            startangle=140,
+            pctdistance=0.8,
+        )
+        for t in texts:
+            t.set_fontsize(8)
+        for at in autotexts:
+            at.set_fontsize(7)
+            at.set_color("white")
+        ax.set_title("Proporsi Skor SAW", fontsize=11)
         tampil_grafik(fig)
 
-        # Grafik 2 — Distribusi GPA
-        st.markdown("**Distribusi GPA Dataset**")
-        fig, ax = plt.subplots(figsize=(9, 3.5))
-        ax.hist(df_raw["GPA"], bins=30, color="#0f3460", edgecolor="white", alpha=0.9)
-        ax.axvline(df_raw["GPA"].mean(), color="#e94560", linestyle="--",
-                   label=f"Rata-rata: {df_raw['GPA'].mean():.2f}")
-        ax.set_xlabel("GPA"); ax.set_ylabel("Frekuensi"); ax.legend()
-        ax.spines[["top","right"]].set_visible(False)
+        # Grafik 2 — Bobot Kriteria (Line)
+        st.markdown("**Bobot Kriteria Pengguna**")
+        nama_kriteria = [
+            "GPA",
+            "Python",
+            "Problem Solving",
+            "Communication",
+            "Internship",
+            "Certification"
+        ]
+
+        fig, ax = plt.subplots(figsize=(9, 4))
+
+        ax.plot(
+            nama_kriteria,
+            bobot,
+            marker="o",
+            linewidth=2.5
+        )
+
+        # Menampilkan nilai pada setiap titik
+        for i, nilai in enumerate(bobot):
+            ax.text(i, nilai + 0.1, f"{nilai:.1f}", ha="center")
+
+        ax.set_title("Bobot Kriteria Pengguna")
+        ax.set_xlabel("Kriteria")
+        ax.set_ylabel("Bobot")
+
+        ax.grid(alpha=0.3)
+
+        ax.spines[["top", "right"]].set_visible(False)
+
         tampil_grafik(fig)
 
         # Grafik 3 — Perbandingan nilai kriteria alternatif terpilih

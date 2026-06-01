@@ -37,8 +37,15 @@ def hitung_saw(df_alt, bobot: list):
         mx = df[k].max()
         df[k + "_norm"] = (df[k] / mx).round(6) if mx else 0.0
 
-    # Normalisasi bobot
+    # =========================
+    # VALIDASI BOBOT
+    # =========================
     total = sum(bobot)
+
+    if total == 0:
+        return None, None, None
+
+    # NORMALISASI BOBOT
     w = [b / total for b in bobot]
 
     # Skor SAW
