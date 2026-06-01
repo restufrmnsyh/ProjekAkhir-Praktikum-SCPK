@@ -25,15 +25,29 @@ def halaman_home():
         <p style='color:#aaa;'>Membantu menentukan karier IT yang paling sesuai</p>
     </div>
     """, unsafe_allow_html=True)
-
+ 
     c1, c2, c3 = st.columns(3)
-    c1.info("**Menyediakan Alternatif**\n\nMenyajikan 40+ pilihan karier di bidang Ilmu Komputer sebagai alternatif keputusan.")
-    c2.info("**Menyesuaikan Pengguna**\n\nBobot kriteria dapat disesuaikan sesuai prioritas dan profil mahasiswa.")
-    c3.info("**Membantu Keputusan**\n\nMenggunakan metode SAW untuk menghasilkan ranking karier terbaik.")
+    c1.info("""
+        **Menyediakan Alternatif**
 
+        Menyajikan lebih dari 40 pilihan karier di bidang Ilmu Komputer yang dapat digunakan sebagai alternatif dalam proses pengambilan keputusan karier.
+        """
+        )
+    c2.info("""
+        **Menyesuaikan Pengguna**
+
+        Memungkinkan pengguna menentukan bobot kriteria sesuai minat, kemampuan, dan prioritas yang dimiliki.
+        """
+            )
+    c3.info("""
+        **Membantu Keputusan**
+
+        Menggunakan metode SAW untuk menghasilkan peringkat karier terbaik berdasarkan kriteria dan bobot yang telah ditentukan.
+        """)
+ 
     st.divider()
     c1, c2, c3 = st.columns(3)
-
+ 
     with c1:
         st.markdown(
             """
@@ -43,7 +57,7 @@ def halaman_home():
             """,
             unsafe_allow_html=True
         )
-
+ 
     with c2:
         st.markdown(
             """
@@ -53,7 +67,7 @@ def halaman_home():
             """,
             unsafe_allow_html=True
         )
-
+ 
     with c3:
         st.markdown(
             """
@@ -76,7 +90,7 @@ def halaman_home():
         mengambil keputusan karier secara lebih objektif, terstruktur, dan tepat sasaran.
     </div>
     """, unsafe_allow_html=True)
-
+ 
     st.divider()
     df = load_data()
     col1, col2, col3, col4 = st.columns(4)
@@ -84,7 +98,7 @@ def halaman_home():
     col2.metric("Jumlah Karier", df["Career_Goals"].nunique())
     col3.metric("Kriteria",      "6")
     col4.metric("Metode",        "SAW")
-
+ 
 
 # =====================================================================
 #  INPUT DATA
