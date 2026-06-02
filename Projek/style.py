@@ -4,7 +4,7 @@ import streamlit as st
 
 def set_page_config():
     st.set_page_config(
-        page_title="Projek Akhir SCPK",
+        page_title="SPK Pemilihan Karier Mahasiswa",
         page_icon="🎓",
         layout="wide",
         initial_sidebar_state="expanded",
