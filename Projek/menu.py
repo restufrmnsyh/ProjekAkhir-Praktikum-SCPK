@@ -219,7 +219,6 @@ def halaman_input():
                  "Internship_Experience","Certifications_Training","Career_Goals"]
         st.dataframe(df[kolom].reset_index(drop=True), use_container_width=True, height=400)
         st.caption(f"Total: {len(df):,} baris data")
-    # FIX 5: Hapus blok DEBUG
 
 
 # =====================================================================
